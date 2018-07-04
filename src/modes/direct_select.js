@@ -66,6 +66,11 @@ DirectSelect.onVertex = function (state, e) {
 
   const selectedCoordinates = this.pathsToCoordinates(state.featureId, state.selectedCoordPaths);
   this.setSelectedCoordinates(selectedCoordinates);
+
+  this.map.fire('draw.direct_select.onVertex', {
+    action: 'draw.onvertex',
+    features: this.getSelected().map(f => f.toGeoJSON())
+  });
 };
 
 DirectSelect.onMidpoint = function (state, e) {
@@ -74,6 +79,11 @@ DirectSelect.onMidpoint = function (state, e) {
   state.feature.addCoordinate(about.coord_path, about.lng, about.lat);
   this.fireUpdate();
   state.selectedCoordPaths = [about.coord_path];
+
+  this.map.fire('draw.direct_select.onMidpoint', {
+    action: 'draw.onmidpoint',
+    features: this.getSelected().map(f => f.toGeoJSON())
+  });
 };
 
 DirectSelect.pathsToCoordinates = function (featureId, paths) {
