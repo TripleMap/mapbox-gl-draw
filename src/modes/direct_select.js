@@ -40,6 +40,7 @@ DirectSelect.startDragging = function(state, e) {
     state.dragMoveLocation = e.lngLat;
     this.map.fire('draw.direct_select.drag.start', {
         action: 'draw.drag.start',
+        drawClient: this._ctx.options.drawClient,
         features: this.getSelected().map(f => f.toGeoJSON())
     });
 };
@@ -51,6 +52,7 @@ DirectSelect.stopDragging = function(state) {
     state.dragMoveLocation = null;
     this.map.fire('draw.direct_select.drag.stop', {
         action: 'draw.drag.stop',
+        drawClient: this._ctx.options.drawClient,
         features: this.getSelected().map(f => f.toGeoJSON())
     });
 };
