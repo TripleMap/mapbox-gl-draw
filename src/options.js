@@ -37,7 +37,6 @@ const hideControls = {
 function addSources(styles, sourceBucket) {
     console.log('===========');
     console.log(this);
-    console.log(styles);
     return styles.map(style => {
         if (style.source) return style;
         return xtend(style, {
