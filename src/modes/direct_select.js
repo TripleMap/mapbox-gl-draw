@@ -37,10 +37,6 @@ DirectSelect.startDragging = function (state, e) {
   this.map.dragPan.disable();
   state.canDragMove = true;
   state.dragMoveLocation = e.lngLat;
-  this.map.fire('draw.direct_select.drag.start', {
-    action: 'draw.drag.start',
-    features: this.getSelected().map(f => f.toGeoJSON())
-  });
 };
 
 DirectSelect.stopDragging = function (state) {
@@ -48,10 +44,6 @@ DirectSelect.stopDragging = function (state) {
   state.dragMoving = false;
   state.canDragMove = false;
   state.dragMoveLocation = null;
-  this.map.fire('draw.direct_select.drag.stop', {
-    action: 'draw.drag.stop',
-    features: this.getSelected().map(f => f.toGeoJSON())
-  });
 };
 
 DirectSelect.onVertex = function (state, e) {
