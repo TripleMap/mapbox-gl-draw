@@ -85,7 +85,6 @@ module.exports = function(ctx) {
         },
         addLayers: function() {
             // drawn features style
-            console.log(this);
             ctx.map.addSource(Constants.sources.COLD + '_' + ctx.options.drawClient, {
                 data: {
                     type: Constants.geojsonTypes.FEATURE_COLLECTION,

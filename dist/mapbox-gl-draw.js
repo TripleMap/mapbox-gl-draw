@@ -6641,264 +6641,265 @@ var DirectSelect = {};
 // INTERNAL FUCNTIONS
 
 DirectSelect.fireUpdate = function () {
-  this.map.fire(Constants.events.UPDATE, {
-    action: Constants.updateActions.CHANGE_COORDINATES,
-    features: this.getSelected().map(function (f) {
-      return f.toGeoJSON();
-    })
-  });
+    this.map.fire(Constants.events.UPDATE, {
+        action: Constants.updateActions.CHANGE_COORDINATES,
+        features: this.getSelected().map(function (f) {
+            return f.toGeoJSON();
+        })
+    });
 };
 
 DirectSelect.fireActionable = function (state) {
-  this.setActionableState({
-    combineFeatures: false,
-    uncombineFeatures: false,
-    trash: state.selectedCoordPaths.length > 0
-  });
+    this.setActionableState({
+        combineFeatures: false,
+        uncombineFeatures: false,
+        trash: state.selectedCoordPaths.length > 0
+    });
 };
 
 DirectSelect.startDragging = function (state, e) {
-  this.map.dragPan.disable();
-  state.canDragMove = true;
-  state.dragMoveLocation = e.lngLat;
-  this.map.fire('draw.direct_select.drag.start', {
-    action: 'draw.drag.start',
-    features: this.getSelected().map(function (f) {
-      return f.toGeoJSON();
-    })
-  });
+    this.map.dragPan.disable();
+    console.log(this);
+    state.canDragMove = true;
+    state.dragMoveLocation = e.lngLat;
+    this.map.fire('draw.direct_select.drag.start', {
+        action: 'draw.drag.start',
+        features: this.getSelected().map(function (f) {
+            return f.toGeoJSON();
+        })
+    });
 };
 
 DirectSelect.stopDragging = function (state) {
-  this.map.dragPan.enable();
-  state.dragMoving = false;
-  state.canDragMove = false;
-  state.dragMoveLocation = null;
-  this.map.fire('draw.direct_select.drag.stop', {
-    action: 'draw.drag.stop',
-    features: this.getSelected().map(function (f) {
-      return f.toGeoJSON();
-    })
-  });
+    this.map.dragPan.enable();
+    state.dragMoving = false;
+    state.canDragMove = false;
+    state.dragMoveLocation = null;
+    this.map.fire('draw.direct_select.drag.stop', {
+        action: 'draw.drag.stop',
+        features: this.getSelected().map(function (f) {
+            return f.toGeoJSON();
+        })
+    });
 };
 
 DirectSelect.onVertex = function (state, e) {
-  this.startDragging(state, e);
-  var about = e.featureTarget.properties;
-  var selectedIndex = state.selectedCoordPaths.indexOf(about.coord_path);
-  if (!isShiftDown(e) && selectedIndex === -1) {
-    state.selectedCoordPaths = [about.coord_path];
-  } else if (isShiftDown(e) && selectedIndex === -1) {
-    state.selectedCoordPaths.push(about.coord_path);
-  }
+    this.startDragging(state, e);
+    var about = e.featureTarget.properties;
+    var selectedIndex = state.selectedCoordPaths.indexOf(about.coord_path);
+    if (!isShiftDown(e) && selectedIndex === -1) {
+        state.selectedCoordPaths = [about.coord_path];
+    } else if (isShiftDown(e) && selectedIndex === -1) {
+        state.selectedCoordPaths.push(about.coord_path);
+    }
 
-  var selectedCoordinates = this.pathsToCoordinates(state.featureId, state.selectedCoordPaths);
-  this.setSelectedCoordinates(selectedCoordinates);
+    var selectedCoordinates = this.pathsToCoordinates(state.featureId, state.selectedCoordPaths);
+    this.setSelectedCoordinates(selectedCoordinates);
 
-  this.map.fire('draw.direct_select.onVertex', {
-    action: 'draw.onvertex',
-    features: this.getSelected().map(function (f) {
-      return f.toGeoJSON();
-    })
-  });
+    this.map.fire('draw.direct_select.onVertex', {
+        action: 'draw.onvertex',
+        features: this.getSelected().map(function (f) {
+            return f.toGeoJSON();
+        })
+    });
 };
 
 DirectSelect.onMidpoint = function (state, e) {
-  this.startDragging(state, e);
-  var about = e.featureTarget.properties;
-  state.feature.addCoordinate(about.coord_path, about.lng, about.lat);
-  this.fireUpdate();
-  state.selectedCoordPaths = [about.coord_path];
+    this.startDragging(state, e);
+    var about = e.featureTarget.properties;
+    state.feature.addCoordinate(about.coord_path, about.lng, about.lat);
+    this.fireUpdate();
+    state.selectedCoordPaths = [about.coord_path];
 
-  this.map.fire('draw.direct_select.onMidpoint', {
-    action: 'draw.onmidpoint',
-    features: this.getSelected().map(function (f) {
-      return f.toGeoJSON();
-    })
-  });
+    this.map.fire('draw.direct_select.onMidpoint', {
+        action: 'draw.onmidpoint',
+        features: this.getSelected().map(function (f) {
+            return f.toGeoJSON();
+        })
+    });
 };
 
 DirectSelect.pathsToCoordinates = function (featureId, paths) {
-  return paths.map(function (coord_path) {
-    return {
-      feature_id: featureId,
-      coord_path: coord_path
-    };
-  });
+    return paths.map(function (coord_path) {
+        return {
+            feature_id: featureId,
+            coord_path: coord_path
+        };
+    });
 };
 
 DirectSelect.onFeature = function (state, e) {
-  if (state.selectedCoordPaths.length === 0) this.startDragging(state, e);else this.stopDragging(state);
+    if (state.selectedCoordPaths.length === 0) this.startDragging(state, e);else this.stopDragging(state);
 };
 
 DirectSelect.dragFeature = function (state, e, delta) {
-  moveFeatures(this.getSelected(), delta);
-  state.dragMoveLocation = e.lngLat;
+    moveFeatures(this.getSelected(), delta);
+    state.dragMoveLocation = e.lngLat;
 };
 
 DirectSelect.dragVertex = function (state, e, delta) {
-  var selectedCoords = state.selectedCoordPaths.map(function (coord_path) {
-    return state.feature.getCoordinate(coord_path);
-  });
-  var selectedCoordPoints = selectedCoords.map(function (coords) {
-    return {
-      type: Constants.geojsonTypes.FEATURE,
-      properties: {},
-      geometry: {
-        type: Constants.geojsonTypes.POINT,
-        coordinates: coords
-      }
-    };
-  });
+    var selectedCoords = state.selectedCoordPaths.map(function (coord_path) {
+        return state.feature.getCoordinate(coord_path);
+    });
+    var selectedCoordPoints = selectedCoords.map(function (coords) {
+        return {
+            type: Constants.geojsonTypes.FEATURE,
+            properties: {},
+            geometry: {
+                type: Constants.geojsonTypes.POINT,
+                coordinates: coords
+            }
+        };
+    });
 
-  var constrainedDelta = constrainFeatureMovement(selectedCoordPoints, delta);
-  for (var i = 0; i < selectedCoords.length; i++) {
-    var coord = selectedCoords[i];
-    state.feature.updateCoordinate(state.selectedCoordPaths[i], coord[0] + constrainedDelta.lng, coord[1] + constrainedDelta.lat);
-  }
+    var constrainedDelta = constrainFeatureMovement(selectedCoordPoints, delta);
+    for (var i = 0; i < selectedCoords.length; i++) {
+        var coord = selectedCoords[i];
+        state.feature.updateCoordinate(state.selectedCoordPaths[i], coord[0] + constrainedDelta.lng, coord[1] + constrainedDelta.lat);
+    }
 };
 
 DirectSelect.clickNoTarget = function () {
-  this.changeMode(Constants.modes.SIMPLE_SELECT);
+    this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
 DirectSelect.clickInactive = function () {
-  this.changeMode(Constants.modes.SIMPLE_SELECT);
+    this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
 DirectSelect.clickActiveFeature = function (state) {
-  state.selectedCoordPaths = [];
-  this.clearSelectedCoordinates();
-  state.feature.changed();
+    state.selectedCoordPaths = [];
+    this.clearSelectedCoordinates();
+    state.feature.changed();
 };
 
 // EXTERNAL FUNCTIONS
 
 DirectSelect.onSetup = function (opts) {
-  var featureId = opts.featureId;
-  var feature = this.getFeature(featureId);
+    var featureId = opts.featureId;
+    var feature = this.getFeature(featureId);
 
-  if (!feature) {
-    throw new Error('You must provide a featureId to enter direct_select mode');
-  }
+    if (!feature) {
+        throw new Error('You must provide a featureId to enter direct_select mode');
+    }
 
-  if (feature.type === Constants.geojsonTypes.POINT) {
-    throw new TypeError('direct_select mode doesn\'t handle point features');
-  }
+    if (feature.type === Constants.geojsonTypes.POINT) {
+        throw new TypeError('direct_select mode doesn\'t handle point features');
+    }
 
-  var state = {
-    featureId: featureId,
-    feature: feature,
-    dragMoveLocation: opts.startPos || null,
-    dragMoving: false,
-    canDragMove: false,
-    selectedCoordPaths: opts.coordPath ? [opts.coordPath] : []
-  };
+    var state = {
+        featureId: featureId,
+        feature: feature,
+        dragMoveLocation: opts.startPos || null,
+        dragMoving: false,
+        canDragMove: false,
+        selectedCoordPaths: opts.coordPath ? [opts.coordPath] : []
+    };
 
-  this.setSelectedCoordinates(this.pathsToCoordinates(featureId, state.selectedCoordPaths));
-  this.setSelected(featureId);
-  doubleClickZoom.disable(this);
+    this.setSelectedCoordinates(this.pathsToCoordinates(featureId, state.selectedCoordPaths));
+    this.setSelected(featureId);
+    doubleClickZoom.disable(this);
 
-  this.setActionableState({
-    trash: true
-  });
+    this.setActionableState({
+        trash: true
+    });
 
-  return state;
+    return state;
 };
 
 DirectSelect.onStop = function () {
-  doubleClickZoom.enable(this);
-  this.clearSelectedCoordinates();
+    doubleClickZoom.enable(this);
+    this.clearSelectedCoordinates();
 };
 
 DirectSelect.toDisplayFeatures = function (state, geojson, push) {
-  if (state.featureId === geojson.properties.id) {
-    geojson.properties.active = Constants.activeStates.ACTIVE;
-    push(geojson);
-    createSupplementaryPoints(geojson, {
-      map: this.map,
-      midpoints: true,
-      selectedPaths: state.selectedCoordPaths
-    }).forEach(push);
-  } else {
-    geojson.properties.active = Constants.activeStates.INACTIVE;
-    push(geojson);
-  }
-  this.fireActionable(state);
+    if (state.featureId === geojson.properties.id) {
+        geojson.properties.active = Constants.activeStates.ACTIVE;
+        push(geojson);
+        createSupplementaryPoints(geojson, {
+            map: this.map,
+            midpoints: true,
+            selectedPaths: state.selectedCoordPaths
+        }).forEach(push);
+    } else {
+        geojson.properties.active = Constants.activeStates.INACTIVE;
+        push(geojson);
+    }
+    this.fireActionable(state);
 };
 
 DirectSelect.onTrash = function (state) {
-  state.selectedCoordPaths.sort().reverse().forEach(function (id) {
-    return state.feature.removeCoordinate(id);
-  });
-  this.fireUpdate();
-  state.selectedCoordPaths = [];
-  this.clearSelectedCoordinates();
-  this.fireActionable(state);
-  if (state.feature.isValid() === false) {
-    this.deleteFeature([state.featureId]);
-    this.changeMode(Constants.modes.SIMPLE_SELECT, {});
-  }
+    state.selectedCoordPaths.sort().reverse().forEach(function (id) {
+        return state.feature.removeCoordinate(id);
+    });
+    this.fireUpdate();
+    state.selectedCoordPaths = [];
+    this.clearSelectedCoordinates();
+    this.fireActionable(state);
+    if (state.feature.isValid() === false) {
+        this.deleteFeature([state.featureId]);
+        this.changeMode(Constants.modes.SIMPLE_SELECT, {});
+    }
 };
 
 DirectSelect.onMouseMove = function (state, e) {
-  // On mousemove that is not a drag, stop vertex movement.
-  var isFeature = CommonSelectors.isActiveFeature(e);
-  var onVertex = isVertex(e);
-  var noCoords = state.selectedCoordPaths.length === 0;
-  if (isFeature && noCoords) this.updateUIClasses({
-    mouse: Constants.cursors.MOVE
-  });else if (onVertex && !noCoords) this.updateUIClasses({
-    mouse: Constants.cursors.MOVE
-  });else this.updateUIClasses({
-    mouse: Constants.cursors.NONE
-  });
-  this.stopDragging(state);
+    // On mousemove that is not a drag, stop vertex movement.
+    var isFeature = CommonSelectors.isActiveFeature(e);
+    var onVertex = isVertex(e);
+    var noCoords = state.selectedCoordPaths.length === 0;
+    if (isFeature && noCoords) this.updateUIClasses({
+        mouse: Constants.cursors.MOVE
+    });else if (onVertex && !noCoords) this.updateUIClasses({
+        mouse: Constants.cursors.MOVE
+    });else this.updateUIClasses({
+        mouse: Constants.cursors.NONE
+    });
+    this.stopDragging(state);
 };
 
 DirectSelect.onMouseOut = function (state) {
-  // As soon as you mouse leaves the canvas, update the feature
-  if (state.dragMoving) this.fireUpdate();
+    // As soon as you mouse leaves the canvas, update the feature
+    if (state.dragMoving) this.fireUpdate();
 };
 
 DirectSelect.onTouchStart = DirectSelect.onMouseDown = function (state, e) {
-  if (isVertex(e)) return this.onVertex(state, e);
-  if (CommonSelectors.isActiveFeature(e)) return this.onFeature(state, e);
-  if (isMidpoint(e)) return this.onMidpoint(state, e);
+    if (isVertex(e)) return this.onVertex(state, e);
+    if (CommonSelectors.isActiveFeature(e)) return this.onFeature(state, e);
+    if (isMidpoint(e)) return this.onMidpoint(state, e);
 };
 
 DirectSelect.onDrag = function (state, e) {
-  if (state.canDragMove !== true) return;
-  state.dragMoving = true;
-  e.originalEvent.stopPropagation();
+    if (state.canDragMove !== true) return;
+    state.dragMoving = true;
+    e.originalEvent.stopPropagation();
 
-  var delta = {
-    lng: e.lngLat.lng - state.dragMoveLocation.lng,
-    lat: e.lngLat.lat - state.dragMoveLocation.lat
-  };
-  if (state.selectedCoordPaths.length > 0) this.dragVertex(state, e, delta);else this.dragFeature(state, e, delta);
+    var delta = {
+        lng: e.lngLat.lng - state.dragMoveLocation.lng,
+        lat: e.lngLat.lat - state.dragMoveLocation.lat
+    };
+    if (state.selectedCoordPaths.length > 0) this.dragVertex(state, e, delta);else this.dragFeature(state, e, delta);
 
-  state.dragMoveLocation = e.lngLat;
+    state.dragMoveLocation = e.lngLat;
 };
 
 DirectSelect.onClick = function (state, e) {
-  if (noTarget(e)) return this.clickNoTarget(state, e);
-  if (CommonSelectors.isActiveFeature(e)) return this.clickActiveFeature(state, e);
-  if (isInactiveFeature(e)) return this.clickInactive(state, e);
-  this.stopDragging(state);
+    if (noTarget(e)) return this.clickNoTarget(state, e);
+    if (CommonSelectors.isActiveFeature(e)) return this.clickActiveFeature(state, e);
+    if (isInactiveFeature(e)) return this.clickInactive(state, e);
+    this.stopDragging(state);
 };
 
 DirectSelect.onTap = function (state, e) {
-  if (noTarget(e)) return this.clickNoTarget(state, e);
-  if (CommonSelectors.isActiveFeature(e)) return this.clickActiveFeature(state, e);
-  if (isInactiveFeature(e)) return this.clickInactive(state, e);
+    if (noTarget(e)) return this.clickNoTarget(state, e);
+    if (CommonSelectors.isActiveFeature(e)) return this.clickActiveFeature(state, e);
+    if (isInactiveFeature(e)) return this.clickInactive(state, e);
 };
 
 DirectSelect.onTouchEnd = DirectSelect.onMouseUp = function (state) {
-  if (state.dragMoving) {
-    this.fireUpdate();
-  }
-  this.stopDragging(state);
+    if (state.dragMoving) {
+        this.fireUpdate();
+    }
+    this.stopDragging(state);
 };
 
 module.exports = DirectSelect;
@@ -8301,7 +8302,7 @@ module.exports = function render() {
             features: store.sources.cold
         });
     }
-    console.log(this);
+
     store.ctx.map.getSource(Constants.sources.HOT + '_' + store.ctx.options.drawClient).setData({
         type: Constants.geojsonTypes.FEATURE_COLLECTION,
         features: store.sources.hot
@@ -8437,7 +8438,6 @@ module.exports = function (ctx) {
         },
         addLayers: function addLayers() {
             // drawn features style
-            console.log(this);
             ctx.map.addSource(Constants.sources.COLD + '_' + ctx.options.drawClient, {
                 data: {
                     type: Constants.geojsonTypes.FEATURE_COLLECTION,

@@ -48,7 +48,7 @@ module.exports = function render() {
             features: store.sources.cold
         });
     }
-    console.log(this);
+
     store.ctx.map.getSource(Constants.sources.HOT + '_' + store.ctx.options.drawClient).setData({
         type: Constants.geojsonTypes.FEATURE_COLLECTION,
         features: store.sources.hot
