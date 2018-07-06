@@ -4,13 +4,13 @@ const ui = require('./ui');
 const Constants = require('./constants');
 const xtend = require('xtend');
 
-module.exports = function(ctx) {
+module.exports = function (ctx) {
 
   let controlContainer = null;
   let mapLoadedInterval = null;
 
   const setup = {
-    onRemove: function() {
+    onRemove: function () {
       // Stop connect attempt in the event that control is removed before map is loaded
       ctx.map.off('load', setup.connect);
       clearInterval(mapLoadedInterval);
@@ -29,23 +29,25 @@ module.exports = function(ctx) {
 
       return this;
     },
-    connect: function() {
+    connect: function () {
       ctx.map.off('load', setup.connect);
       clearInterval(mapLoadedInterval);
       setup.addLayers();
       ctx.store.storeMapConfig();
       ctx.events.addEventListeners();
     },
-    onAdd: function(map) {
+    onAdd: function (map) {
       if (process.env.NODE_ENV !== 'test') {
         // Monkey patch to resolve breaking change to `fire` introduced by
         // mapbox-gl-js. See mapbox/mapbox-gl-draw/issues/766.
         const _fire = map.fire;
-        map.fire = function(type, event) {
+        map.fire = function (type, event) {
           let args = arguments;
 
           if (_fire.length === 1 && arguments.length !== 1) {
-            args = [xtend({}, { type: type }, event)];
+            args = [xtend({}, {
+              type: type
+            }, event)];
           }
 
           return _fire.apply(map, args);
@@ -73,15 +75,17 @@ module.exports = function(ctx) {
         setup.connect();
       } else {
         map.on('load', setup.connect);
-        mapLoadedInterval = setInterval(() => { if (map.loaded()) setup.connect(); }, 16);
+        mapLoadedInterval = setInterval(() => {
+          if (map.loaded()) setup.connect();
+        }, 16);
       }
 
       ctx.events.start();
       return controlContainer;
     },
-    addLayers: function() {
+    addLayers: function () {
       // drawn features style
-      console.log(Constants.sources.COLD)
+
       ctx.map.addSource(Constants.sources.COLD, {
         data: {
           type: Constants.geojsonTypes.FEATURE_COLLECTION,
@@ -108,7 +112,7 @@ module.exports = function(ctx) {
     },
     // Check for layers and sources before attempting to remove
     // If user adds draw control and removes it before the map is loaded, layers and sources will be missing
-    removeLayers: function() {
+    removeLayers: function () {
       ctx.options.styles.forEach(style => {
         if (ctx.map.getLayer(style.id)) {
           ctx.map.removeLayer(style.id);

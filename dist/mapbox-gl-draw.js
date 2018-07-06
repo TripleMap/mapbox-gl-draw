@@ -8395,7 +8395,9 @@ module.exports = function (ctx) {
           var args = arguments;
 
           if (_fire.length === 1 && arguments.length !== 1) {
-            args = [xtend({}, { type: type }, event)];
+            args = [xtend({}, {
+              type: type
+            }, event)];
           }
 
           return _fire.apply(map, args);
@@ -8432,7 +8434,7 @@ module.exports = function (ctx) {
     },
     addLayers: function addLayers() {
       // drawn features style
-      console.log(Constants.sources.COLD);
+
       ctx.map.addSource(Constants.sources.COLD, {
         data: {
           type: Constants.geojsonTypes.FEATURE_COLLECTION,
