@@ -34,15 +34,12 @@ const hideControls = {
     uncombine_features: false
 };
 
-function addSources(styles, sourceBucket) {
-    console.log('===========');
-    console.log(this);
-    console.log('===========');
+function addSources(styles, sourceBucket, drawClient) {
     return styles.map(style => {
         if (style.source) return style;
         return xtend(style, {
             id: `${style.id}.${sourceBucket}`,
-            source: (sourceBucket === 'hot') ? Constants.sources.HOT + '_' + store.ctx.options.drawClient : Constants.sources.COLD + '_' + store.ctx.options.drawClient
+            source: (sourceBucket === 'hot') ? Constants.sources.HOT + '_' + drawClient : Constants.sources.COLD + '_' + drawClient
         });
     });
 }
@@ -63,7 +60,7 @@ module.exports = function(options = {}) {
     withDefaults = xtend(defaultOptions, withDefaults);
 
     // Layers with a shared source should be adjacent for performance reasons
-    withDefaults.styles = addSources(withDefaults.styles, 'cold').concat(addSources(withDefaults.styles, 'hot'));
+    withDefaults.styles = addSources(withDefaults.styles, 'cold', options.drawClient).concat(addSources(withDefaults.styles, 'hot', options.drawClient));
 
     return withDefaults;
 };
