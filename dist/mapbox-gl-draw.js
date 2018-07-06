@@ -8245,103 +8245,105 @@ module.exports = function () {
 var Constants = require('./constants');
 
 module.exports = function render() {
-  var store = this;
-  var mapExists = store.ctx.map && store.ctx.map.getSource(Constants.sources.HOT) !== undefined;
-  if (!mapExists) return cleanup();
+    var store = this;
+    var mapExists = store.ctx.map && store.ctx.map.getSource(Constants.sources.HOT) !== undefined;
+    if (!mapExists) return cleanup();
 
-  var mode = store.ctx.events.currentModeName();
+    var mode = store.ctx.events.currentModeName();
 
-  store.ctx.ui.queueMapClasses({ mode: mode });
-
-  var newHotIds = [];
-  var newColdIds = [];
-
-  if (store.isDirty) {
-    newColdIds = store.getAllIds();
-  } else {
-    newHotIds = store.getChangedIds().filter(function (id) {
-      return store.get(id) !== undefined;
-    });
-    newColdIds = store.sources.hot.filter(function (geojson) {
-      return geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined;
-    }).map(function (geojson) {
-      return geojson.properties.id;
-    });
-  }
-
-  store.sources.hot = [];
-  var lastColdCount = store.sources.cold.length;
-  store.sources.cold = store.isDirty ? [] : store.sources.cold.filter(function (geojson) {
-    var id = geojson.properties.id || geojson.properties.parent;
-    return newHotIds.indexOf(id) === -1;
-  });
-
-  var coldChanged = lastColdCount !== store.sources.cold.length || newColdIds.length > 0;
-  newHotIds.forEach(function (id) {
-    return renderFeature(id, 'hot');
-  });
-  newColdIds.forEach(function (id) {
-    return renderFeature(id, 'cold');
-  });
-
-  function renderFeature(id, source) {
-    var feature = store.get(id);
-    var featureInternal = feature.internal(mode);
-    store.ctx.events.currentModeRender(featureInternal, function (geojson) {
-      store.sources[source].push(geojson);
-    });
-  }
-
-  if (coldChanged) {
-    store.ctx.map.getSource(Constants.sources.COLD).setData({
-      type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: store.sources.cold
-    });
-  }
-
-  store.ctx.map.getSource(Constants.sources.HOT).setData({
-    type: Constants.geojsonTypes.FEATURE_COLLECTION,
-    features: store.sources.hot
-  });
-
-  if (store._emitSelectionChange) {
-    store.ctx.map.fire(Constants.events.SELECTION_CHANGE, {
-      features: store.getSelected().map(function (feature) {
-        return feature.toGeoJSON();
-      }),
-      points: store.getSelectedCoordinates().map(function (coordinate) {
-        return {
-          type: Constants.geojsonTypes.FEATURE,
-          properties: {},
-          geometry: {
-            type: Constants.geojsonTypes.POINT,
-            coordinates: coordinate.coordinates
-          }
-        };
-      })
-    });
-    store._emitSelectionChange = false;
-  }
-
-  if (store._deletedFeaturesToEmit.length) {
-    var geojsonToEmit = store._deletedFeaturesToEmit.map(function (feature) {
-      return feature.toGeoJSON();
+    store.ctx.ui.queueMapClasses({
+        mode: mode
     });
 
-    store._deletedFeaturesToEmit = [];
+    var newHotIds = [];
+    var newColdIds = [];
 
-    store.ctx.map.fire(Constants.events.DELETE, {
-      features: geojsonToEmit
+    if (store.isDirty) {
+        newColdIds = store.getAllIds();
+    } else {
+        newHotIds = store.getChangedIds().filter(function (id) {
+            return store.get(id) !== undefined;
+        });
+        newColdIds = store.sources.hot.filter(function (geojson) {
+            return geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined;
+        }).map(function (geojson) {
+            return geojson.properties.id;
+        });
+    }
+
+    store.sources.hot = [];
+    var lastColdCount = store.sources.cold.length;
+    store.sources.cold = store.isDirty ? [] : store.sources.cold.filter(function (geojson) {
+        var id = geojson.properties.id || geojson.properties.parent;
+        return newHotIds.indexOf(id) === -1;
     });
-  }
 
-  cleanup();
-  store.ctx.map.fire(Constants.events.RENDER, {});
+    var coldChanged = lastColdCount !== store.sources.cold.length || newColdIds.length > 0;
+    newHotIds.forEach(function (id) {
+        return renderFeature(id, 'hot');
+    });
+    newColdIds.forEach(function (id) {
+        return renderFeature(id, 'cold');
+    });
 
-  function cleanup() {
-    store.isDirty = false;
-    store.clearChangedIds();
-  }
+    function renderFeature(id, source) {
+        var feature = store.get(id);
+        var featureInternal = feature.internal(mode);
+        store.ctx.events.currentModeRender(featureInternal, function (geojson) {
+            store.sources[source].push(geojson);
+        });
+    }
+
+    if (coldChanged) {
+        store.ctx.map.getSource(Constants.sources.COLD).setData({
+            type: Constants.geojsonTypes.FEATURE_COLLECTION,
+            features: store.sources.cold
+        });
+    }
+    console.log(this);
+    store.ctx.map.getSource(Constants.sources.HOT).setData({
+        type: Constants.geojsonTypes.FEATURE_COLLECTION,
+        features: store.sources.hot
+    });
+
+    if (store._emitSelectionChange) {
+        store.ctx.map.fire(Constants.events.SELECTION_CHANGE, {
+            features: store.getSelected().map(function (feature) {
+                return feature.toGeoJSON();
+            }),
+            points: store.getSelectedCoordinates().map(function (coordinate) {
+                return {
+                    type: Constants.geojsonTypes.FEATURE,
+                    properties: {},
+                    geometry: {
+                        type: Constants.geojsonTypes.POINT,
+                        coordinates: coordinate.coordinates
+                    }
+                };
+            })
+        });
+        store._emitSelectionChange = false;
+    }
+
+    if (store._deletedFeaturesToEmit.length) {
+        var geojsonToEmit = store._deletedFeaturesToEmit.map(function (feature) {
+            return feature.toGeoJSON();
+        });
+
+        store._deletedFeaturesToEmit = [];
+
+        store.ctx.map.fire(Constants.events.DELETE, {
+            features: geojsonToEmit
+        });
+    }
+
+    cleanup();
+    store.ctx.map.fire(Constants.events.RENDER, {});
+
+    function cleanup() {
+        store.isDirty = false;
+        store.clearChangedIds();
+    }
 };
 
 },{"./constants":23}],63:[function(require,module,exports){
@@ -8356,131 +8358,131 @@ var xtend = require('xtend');
 
 module.exports = function (ctx) {
 
-  var controlContainer = null;
-  var mapLoadedInterval = null;
+    var controlContainer = null;
+    var mapLoadedInterval = null;
 
-  var setup = {
-    onRemove: function onRemove() {
-      // Stop connect attempt in the event that control is removed before map is loaded
-      ctx.map.off('load', setup.connect);
-      clearInterval(mapLoadedInterval);
+    var setup = {
+        onRemove: function onRemove() {
+            // Stop connect attempt in the event that control is removed before map is loaded
+            ctx.map.off('load', setup.connect);
+            clearInterval(mapLoadedInterval);
 
-      setup.removeLayers();
-      ctx.store.restoreMapConfig();
-      ctx.ui.removeButtons();
-      ctx.events.removeEventListeners();
-      ctx.ui.clearMapClasses();
-      ctx.map = null;
-      ctx.container = null;
-      ctx.store = null;
+            setup.removeLayers();
+            ctx.store.restoreMapConfig();
+            ctx.ui.removeButtons();
+            ctx.events.removeEventListeners();
+            ctx.ui.clearMapClasses();
+            ctx.map = null;
+            ctx.container = null;
+            ctx.store = null;
 
-      if (controlContainer && controlContainer.parentNode) controlContainer.parentNode.removeChild(controlContainer);
-      controlContainer = null;
+            if (controlContainer && controlContainer.parentNode) controlContainer.parentNode.removeChild(controlContainer);
+            controlContainer = null;
 
-      return this;
-    },
-    connect: function connect() {
-      ctx.map.off('load', setup.connect);
-      clearInterval(mapLoadedInterval);
-      setup.addLayers();
-      ctx.store.storeMapConfig();
-      ctx.events.addEventListeners();
-    },
-    onAdd: function onAdd(map) {
-      if (process.env.NODE_ENV !== 'test') {
-        // Monkey patch to resolve breaking change to `fire` introduced by
-        // mapbox-gl-js. See mapbox/mapbox-gl-draw/issues/766.
-        var _fire = map.fire;
-        map.fire = function (type, event) {
-          var args = arguments;
-
-          if (_fire.length === 1 && arguments.length !== 1) {
-            args = [xtend({}, {
-              type: type
-            }, event)];
-          }
-
-          return _fire.apply(map, args);
-        };
-      }
-
-      ctx.map = map;
-      ctx.events = events(ctx);
-      ctx.ui = ui(ctx);
-      ctx.container = map.getContainer();
-      ctx.store = new Store(ctx);
-
-      controlContainer = ctx.ui.addButtons();
-
-      if (ctx.options.boxSelect) {
-        map.boxZoom.disable();
-        // Need to toggle dragPan on and off or else first
-        // dragPan disable attempt in simple_select doesn't work
-        map.dragPan.disable();
-        map.dragPan.enable();
-      }
-
-      if (map.loaded()) {
-        setup.connect();
-      } else {
-        map.on('load', setup.connect);
-        mapLoadedInterval = setInterval(function () {
-          if (map.loaded()) setup.connect();
-        }, 16);
-      }
-
-      ctx.events.start();
-      return controlContainer;
-    },
-    addLayers: function addLayers() {
-      // drawn features style
-
-      ctx.map.addSource(Constants.sources.COLD, {
-        data: {
-          type: Constants.geojsonTypes.FEATURE_COLLECTION,
-          features: []
+            return this;
         },
-        type: 'geojson'
-      });
-
-      // hot features style
-      ctx.map.addSource(Constants.sources.HOT, {
-        data: {
-          type: Constants.geojsonTypes.FEATURE_COLLECTION,
-          features: []
+        connect: function connect() {
+            ctx.map.off('load', setup.connect);
+            clearInterval(mapLoadedInterval);
+            setup.addLayers();
+            ctx.store.storeMapConfig();
+            ctx.events.addEventListeners();
         },
-        type: 'geojson'
-      });
+        onAdd: function onAdd(map) {
+            if (process.env.NODE_ENV !== 'test') {
+                // Monkey patch to resolve breaking change to `fire` introduced by
+                // mapbox-gl-js. See mapbox/mapbox-gl-draw/issues/766.
+                var _fire = map.fire;
+                map.fire = function (type, event) {
+                    var args = arguments;
 
-      ctx.options.styles.forEach(function (style) {
-        ctx.map.addLayer(style);
-      });
+                    if (_fire.length === 1 && arguments.length !== 1) {
+                        args = [xtend({}, {
+                            type: type
+                        }, event)];
+                    }
 
-      ctx.store.setDirty(true);
-      ctx.store.render();
-    },
-    // Check for layers and sources before attempting to remove
-    // If user adds draw control and removes it before the map is loaded, layers and sources will be missing
-    removeLayers: function removeLayers() {
-      ctx.options.styles.forEach(function (style) {
-        if (ctx.map.getLayer(style.id)) {
-          ctx.map.removeLayer(style.id);
+                    return _fire.apply(map, args);
+                };
+            }
+
+            ctx.map = map;
+            ctx.events = events(ctx);
+            ctx.ui = ui(ctx);
+            ctx.container = map.getContainer();
+            ctx.store = new Store(ctx);
+
+            controlContainer = ctx.ui.addButtons();
+
+            if (ctx.options.boxSelect) {
+                map.boxZoom.disable();
+                // Need to toggle dragPan on and off or else first
+                // dragPan disable attempt in simple_select doesn't work
+                map.dragPan.disable();
+                map.dragPan.enable();
+            }
+
+            if (map.loaded()) {
+                setup.connect();
+            } else {
+                map.on('load', setup.connect);
+                mapLoadedInterval = setInterval(function () {
+                    if (map.loaded()) setup.connect();
+                }, 16);
+            }
+
+            ctx.events.start();
+            return controlContainer;
+        },
+        addLayers: function addLayers() {
+            // drawn features style
+            console.log(this);
+            ctx.map.addSource(Constants.sources.COLD, {
+                data: {
+                    type: Constants.geojsonTypes.FEATURE_COLLECTION,
+                    features: []
+                },
+                type: 'geojson'
+            });
+
+            // hot features style
+            ctx.map.addSource(Constants.sources.HOT, {
+                data: {
+                    type: Constants.geojsonTypes.FEATURE_COLLECTION,
+                    features: []
+                },
+                type: 'geojson'
+            });
+
+            ctx.options.styles.forEach(function (style) {
+                ctx.map.addLayer(style);
+            });
+
+            ctx.store.setDirty(true);
+            ctx.store.render();
+        },
+        // Check for layers and sources before attempting to remove
+        // If user adds draw control and removes it before the map is loaded, layers and sources will be missing
+        removeLayers: function removeLayers() {
+            ctx.options.styles.forEach(function (style) {
+                if (ctx.map.getLayer(style.id)) {
+                    ctx.map.removeLayer(style.id);
+                }
+            });
+
+            if (ctx.map.getSource(Constants.sources.COLD)) {
+                ctx.map.removeSource(Constants.sources.COLD);
+            }
+
+            if (ctx.map.getSource(Constants.sources.HOT)) {
+                ctx.map.removeSource(Constants.sources.HOT);
+            }
         }
-      });
+    };
 
-      if (ctx.map.getSource(Constants.sources.COLD)) {
-        ctx.map.removeSource(Constants.sources.COLD);
-      }
+    ctx.setup = setup;
 
-      if (ctx.map.getSource(Constants.sources.HOT)) {
-        ctx.map.removeSource(Constants.sources.HOT);
-      }
-    }
-  };
-
-  ctx.setup = setup;
-
-  return setup;
+    return setup;
 };
 
 }).call(this,require('_process'))
