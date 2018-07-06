@@ -2,7 +2,7 @@ const Constants = require('./constants');
 
 module.exports = function render() {
     const store = this;
-    const mapExists = store.ctx.map && store.ctx.map.getSource(Constants.sources.HOT) !== undefined;
+    const mapExists = store.ctx.map && store.ctx.map.getSource(Constants.sources.HOT + '_' + store.ctx.options.drawClient) !== undefined;
     if (!mapExists) return cleanup();
 
     const mode = store.ctx.events.currentModeName();
@@ -43,13 +43,13 @@ module.exports = function render() {
     }
 
     if (coldChanged) {
-        store.ctx.map.getSource(Constants.sources.COLD).setData({
+        store.ctx.map.getSource(Constants.sources.COLD + '_' + store.ctx.options.drawClient).setData({
             type: Constants.geojsonTypes.FEATURE_COLLECTION,
             features: store.sources.cold
         });
     }
     console.log(this);
-    store.ctx.map.getSource(Constants.sources.HOT).setData({
+    store.ctx.map.getSource(Constants.sources.HOT + '_' + store.ctx.options.drawClient).setData({
         type: Constants.geojsonTypes.FEATURE_COLLECTION,
         features: store.sources.hot
     });

@@ -8175,68 +8175,70 @@ var xtend = require('xtend');
 var Constants = require('./constants');
 
 var defaultOptions = {
-  defaultMode: Constants.modes.SIMPLE_SELECT,
-  keybindings: true,
-  touchEnabled: true,
-  clickBuffer: 2,
-  touchBuffer: 25,
-  boxSelect: true,
-  displayControlsDefault: true,
-  styles: require('./lib/theme'),
-  modes: require('./modes'),
-  controls: {},
-  userProperties: false
+    defaultMode: Constants.modes.SIMPLE_SELECT,
+    keybindings: true,
+    touchEnabled: true,
+    clickBuffer: 2,
+    touchBuffer: 25,
+    boxSelect: true,
+    displayControlsDefault: true,
+    styles: require('./lib/theme'),
+    modes: require('./modes'),
+    controls: {},
+    userProperties: false,
+    drawClient: ''
 };
 
 var showControls = {
-  point: true,
-  line_string: true,
-  polygon: true,
-  trash: true,
-  combine_features: true,
-  uncombine_features: true
+    point: true,
+    line_string: true,
+    polygon: true,
+    trash: true,
+    combine_features: true,
+    uncombine_features: true
 };
 
 var hideControls = {
-  point: false,
-  line_string: false,
-  polygon: false,
-  trash: false,
-  combine_features: false,
-  uncombine_features: false
+    point: false,
+    line_string: false,
+    polygon: false,
+    trash: false,
+    combine_features: false,
+    uncombine_features: false
 };
 
 function addSources(styles, sourceBucket) {
-  return styles.map(function (style) {
-    if (style.source) return style;
-    return xtend(style, {
-      id: style.id + '.' + sourceBucket,
-      source: sourceBucket === 'hot' ? Constants.sources.HOT : Constants.sources.COLD
+    console.log(styles);
+    return styles.map(function (style) {
+        if (style.source) return style;
+        return xtend(style, {
+            id: style.id + '.' + sourceBucket,
+            source: sourceBucket === 'hot' ? Constants.sources.HOT + '_' + store.ctx.options.drawClient : Constants.sources.COLD + '_' + store.ctx.options.drawClient
+        });
     });
-  });
 }
 
 module.exports = function () {
-  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-  var withDefaults = xtend(options);
+    var withDefaults = xtend(options);
 
-  if (!options.controls) {
-    withDefaults.controls = {};
-  }
+    if (!options.controls) {
+        withDefaults.controls = {};
+    }
 
-  if (options.displayControlsDefault === false) {
-    withDefaults.controls = xtend(hideControls, options.controls);
-  } else {
-    withDefaults.controls = xtend(showControls, options.controls);
-  }
+    if (options.displayControlsDefault === false) {
+        withDefaults.controls = xtend(hideControls, options.controls);
+    } else {
+        withDefaults.controls = xtend(showControls, options.controls);
+    }
 
-  withDefaults = xtend(defaultOptions, withDefaults);
+    withDefaults = xtend(defaultOptions, withDefaults);
 
-  // Layers with a shared source should be adjacent for performance reasons
-  withDefaults.styles = addSources(withDefaults.styles, 'cold').concat(addSources(withDefaults.styles, 'hot'));
+    // Layers with a shared source should be adjacent for performance reasons
+    withDefaults.styles = addSources(withDefaults.styles, 'cold').concat(addSources(withDefaults.styles, 'hot'));
 
-  return withDefaults;
+    return withDefaults;
 };
 
 },{"./constants":23,"./lib/theme":49,"./modes":56,"xtend":21}],62:[function(require,module,exports){
@@ -8246,7 +8248,7 @@ var Constants = require('./constants');
 
 module.exports = function render() {
     var store = this;
-    var mapExists = store.ctx.map && store.ctx.map.getSource(Constants.sources.HOT) !== undefined;
+    var mapExists = store.ctx.map && store.ctx.map.getSource(Constants.sources.HOT + '_' + store.ctx.options.drawClient) !== undefined;
     if (!mapExists) return cleanup();
 
     var mode = store.ctx.events.currentModeName();
@@ -8295,13 +8297,13 @@ module.exports = function render() {
     }
 
     if (coldChanged) {
-        store.ctx.map.getSource(Constants.sources.COLD).setData({
+        store.ctx.map.getSource(Constants.sources.COLD + '_' + store.ctx.options.drawClient).setData({
             type: Constants.geojsonTypes.FEATURE_COLLECTION,
             features: store.sources.cold
         });
     }
     console.log(this);
-    store.ctx.map.getSource(Constants.sources.HOT).setData({
+    store.ctx.map.getSource(Constants.sources.HOT + '_' + store.ctx.options.drawClient).setData({
         type: Constants.geojsonTypes.FEATURE_COLLECTION,
         features: store.sources.hot
     });
@@ -8437,7 +8439,7 @@ module.exports = function (ctx) {
         addLayers: function addLayers() {
             // drawn features style
             console.log(this);
-            ctx.map.addSource(Constants.sources.COLD, {
+            ctx.map.addSource(Constants.sources.COLD + '_' + ctx.options.drawClient, {
                 data: {
                     type: Constants.geojsonTypes.FEATURE_COLLECTION,
                     features: []
@@ -8446,7 +8448,7 @@ module.exports = function (ctx) {
             });
 
             // hot features style
-            ctx.map.addSource(Constants.sources.HOT, {
+            ctx.map.addSource(Constants.sources.HOT + '_' + ctx.options.drawClient, {
                 data: {
                     type: Constants.geojsonTypes.FEATURE_COLLECTION,
                     features: []
@@ -8470,12 +8472,12 @@ module.exports = function (ctx) {
                 }
             });
 
-            if (ctx.map.getSource(Constants.sources.COLD)) {
-                ctx.map.removeSource(Constants.sources.COLD);
+            if (ctx.map.getSource(Constants.sources.COLD + '_' + ctx.options.drawClient)) {
+                ctx.map.removeSource(Constants.sources.COLD + '_' + ctx.options.drawClient);
             }
 
-            if (ctx.map.getSource(Constants.sources.HOT)) {
-                ctx.map.removeSource(Constants.sources.HOT);
+            if (ctx.map.getSource(Constants.sources.HOT + '_' + ctx.options.drawClient)) {
+                ctx.map.removeSource(Constants.sources.HOT + '_' + ctx.options.drawClient);
             }
         }
     };

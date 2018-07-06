@@ -86,7 +86,7 @@ module.exports = function(ctx) {
         addLayers: function() {
             // drawn features style
             console.log(this);
-            ctx.map.addSource(Constants.sources.COLD, {
+            ctx.map.addSource(Constants.sources.COLD + '_' + ctx.options.drawClient, {
                 data: {
                     type: Constants.geojsonTypes.FEATURE_COLLECTION,
                     features: []
@@ -95,7 +95,7 @@ module.exports = function(ctx) {
             });
 
             // hot features style
-            ctx.map.addSource(Constants.sources.HOT, {
+            ctx.map.addSource(Constants.sources.HOT + '_' + ctx.options.drawClient, {
                 data: {
                     type: Constants.geojsonTypes.FEATURE_COLLECTION,
                     features: []
@@ -119,12 +119,12 @@ module.exports = function(ctx) {
                 }
             });
 
-            if (ctx.map.getSource(Constants.sources.COLD)) {
-                ctx.map.removeSource(Constants.sources.COLD);
+            if (ctx.map.getSource(Constants.sources.COLD + '_' + ctx.options.drawClient)) {
+                ctx.map.removeSource(Constants.sources.COLD + '_' + ctx.options.drawClient);
             }
 
-            if (ctx.map.getSource(Constants.sources.HOT)) {
-                ctx.map.removeSource(Constants.sources.HOT);
+            if (ctx.map.getSource(Constants.sources.HOT + '_' + ctx.options.drawClient)) {
+                ctx.map.removeSource(Constants.sources.HOT + '_' + ctx.options.drawClient);
             }
         }
     };
