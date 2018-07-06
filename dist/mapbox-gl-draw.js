@@ -8208,6 +8208,7 @@ var hideControls = {
 };
 
 function addSources(styles, sourceBucket) {
+    console.log('===========');
     console.log(this);
     console.log(styles);
     return styles.map(function (style) {
