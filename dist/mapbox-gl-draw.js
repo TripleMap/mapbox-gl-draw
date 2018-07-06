@@ -4939,6 +4939,14 @@ module.exports = function (ctx, api) {
 },{"./constants":23,"./feature_types/line_string":26,"./feature_types/multi_feature":27,"./feature_types/point":28,"./feature_types/polygon":29,"./lib/features_at":37,"./lib/string_set":47,"./lib/string_sets_are_equal":48,"@mapbox/geojson-normalize":7,"@mapbox/geojsonhint":8,"hat":14,"lodash.isequal":16}],23:[function(require,module,exports){
 'use strict';
 
+var guid = function guid() {
+  var s4 = function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  };
+  return '' + s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+};
+
+var id = guid();
 module.exports = {
   classes: {
     CONTROL_BASE: 'mapboxgl-ctrl',
@@ -4956,8 +4964,8 @@ module.exports = {
     BOX_SELECT: 'mapbox-gl-draw_boxselect'
   },
   sources: {
-    HOT: 'mapbox-gl-draw-hot',
-    COLD: 'mapbox-gl-draw-cold'
+    HOT: 'mapbox-gl-draw-hot' + id,
+    COLD: 'mapbox-gl-draw-cold' + id
   },
   cursors: {
     ADD: 'add',

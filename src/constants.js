@@ -1,3 +1,11 @@
+var guid = function () {
+  var s4 = function () {
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  }
+  return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
+}
+
+const id = guid();
 module.exports = {
   classes: {
     CONTROL_BASE: 'mapboxgl-ctrl',
@@ -15,8 +23,8 @@ module.exports = {
     BOX_SELECT: 'mapbox-gl-draw_boxselect'
   },
   sources: {
-    HOT: 'mapbox-gl-draw-hot',
-    COLD: 'mapbox-gl-draw-cold'
+    HOT: 'mapbox-gl-draw-hot' + id,
+    COLD: 'mapbox-gl-draw-cold' + id
   },
   cursors: {
     ADD: 'add',
