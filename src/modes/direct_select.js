@@ -35,7 +35,6 @@ DirectSelect.fireActionable = function(state) {
 
 DirectSelect.startDragging = function(state, e) {
     this.map.dragPan.disable();
-    console.log(this);
     state.canDragMove = true;
     state.dragMoveLocation = e.lngLat;
     this.map.fire('draw.direct_select.drag.start', {

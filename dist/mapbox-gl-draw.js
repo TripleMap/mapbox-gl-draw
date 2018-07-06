@@ -6659,11 +6659,11 @@ DirectSelect.fireActionable = function (state) {
 
 DirectSelect.startDragging = function (state, e) {
     this.map.dragPan.disable();
-    console.log(this);
     state.canDragMove = true;
     state.dragMoveLocation = e.lngLat;
     this.map.fire('draw.direct_select.drag.start', {
         action: 'draw.drag.start',
+        drawClient: this._ctx.options.drawClient,
         features: this.getSelected().map(function (f) {
             return f.toGeoJSON();
         })
@@ -6677,6 +6677,7 @@ DirectSelect.stopDragging = function (state) {
     state.dragMoveLocation = null;
     this.map.fire('draw.direct_select.drag.stop', {
         action: 'draw.drag.stop',
+        drawClient: this._ctx.options.drawClient,
         features: this.getSelected().map(function (f) {
             return f.toGeoJSON();
         })
